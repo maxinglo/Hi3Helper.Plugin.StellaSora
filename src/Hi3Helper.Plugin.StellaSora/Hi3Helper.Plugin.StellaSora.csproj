@@ -11,7 +11,7 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <InvariantGlobalization>false</InvariantGlobalization>
     <AssemblyName>StellaSora</AssemblyName>
-    <Version>0.2.2</Version>
+    <Version>0.2.3</Version>
     <Company>Maxing</Company>
     <Authors>Maxing</Authors>
     <Description>Stella Sora plugin for Collapse Launcher</Description>
