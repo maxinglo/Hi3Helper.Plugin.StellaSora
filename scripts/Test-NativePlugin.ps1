@@ -63,8 +63,8 @@ public static unsafe class StellaSoraNativeSmoke
 
             string[] expectedSources =
             {
-                "https://github.com/maxinglo/Hi3Helper.Plugin.StellaSora/releases/latest/download/",
-                "https://gitee.com/maxing_long/hi3helper-plugin-stella-sora/releases/download/latest/"
+                "https://github.com/maxinglo/Hi3Helper.Plugin.StellaSora/releases/download/collapse-update/",
+                "https://gitee.com/maxing_long/hi3helper-plugin-stella-sora/releases/download/collapse-update/"
             };
             int sourceCount = 0;
             char** sourceUrls = null;

@@ -39,7 +39,7 @@
 3. 选择「添加 .zip 或 manifest.json」，导入压缩包并重启 Collapse。
 4. 在游戏列表中选择「星塔旅人」和对应区服。已有客户端时，选择包含游戏主程序的目录。
 
-支持自动更新的版本安装后，可在 Collapse 的「插件管理」中检查插件更新。插件先尝试读取本仓库 GitHub Releases 的 `manifest.json`，再尝试 Gitee 镜像。早期版本需要手动导入一次支持自动更新的 ZIP。
+支持自动更新的版本安装后，可在 Collapse 的「插件管理」中检查插件更新。插件先尝试读取 GitHub `collapse-update` 预发布的 `manifest.json`，再尝试 Gitee 上的同名预发布。此前安装的版本需要手动导入一次新版 ZIP。
 
 ## 从源码构建
 
@@ -54,7 +54,9 @@
 
 ## 发布
 
-项目版本与 `v主版本.次版本.修订版本` 标签号对应。推送版本标签后，`Release Stella Sora Plugin` 工作流构建和测试插件，并将手动安装 ZIP、`manifest.json` 和清单列出的独立文件上传至 GitHub Releases。镜像任务从同一 GitHub Release 下载这些文件，再发布到 Gitee。配置仓库的 Actions secret `GITEE_TOKEN` 后即可启用镜像任务，令牌需对 `maxing_long/hi3helper-plugin-stella-sora` 有发布权限。镜像任务失败时，可在 Actions 中重跑失败任务。
+项目版本与 `v主版本.次版本.修订版本` 标签号对应。在 `main` 手动运行 `Release Stella Sora Plugin` 工作流后，工作流构建并测试插件，按项目版本创建发布标签。GitHub 和 Gitee 的正式 Release 只上传安装 ZIP，两端的 `collapse-update` 预发布存放 `manifest.json` 和清单列出的独立文件。更新文件由同一安装 ZIP 解包得到。
+
+配置仓库的 Actions secret `GITEE_TOKEN` 后即可发布镜像，令牌需对 `maxing_long/hi3helper-plugin-stella-sora` 有发布权限。镜像任务失败时，可在 Actions 中重跑失败任务。
 
 ## 许可
 
