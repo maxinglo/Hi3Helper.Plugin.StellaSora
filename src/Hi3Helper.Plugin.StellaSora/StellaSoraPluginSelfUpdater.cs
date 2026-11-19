@@ -10,7 +10,7 @@ internal sealed partial class StellaSoraPluginSelfUpdater : PluginSelfUpdateBase
     private static readonly string[] ReleaseSources =
     [
         "https://github.com/maxinglo/Hi3Helper.Plugin.StellaSora/releases/download/collapse-update/",
-        "https://gitee.com/maxing_long/hi3helper-plugin-stella-sora/releases/download/collapse-update/"
+        "https://plugins.freedorm.net/collapse-plugins/stella-sora/collapse-update/"
     ];
 
     protected override ReadOnlySpan<string> BaseCdnUrlSpan => ReleaseSources;

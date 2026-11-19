@@ -2,11 +2,6 @@ name: Release Stella Sora Plugin
 
 on:
   workflow_dispatch:
-    inputs:
-      replace_gitee_commit:
-        description: Expected old Gitee installer tag commit (only when reissuing a version)
-        type: string
-        required: false
 
 concurrency:
   group: stella-sora-plugin-release
@@ -121,8 +116,13 @@ jobs:
           ./scripts/Publish-GitHubUpdateFeed.ps1 -Repository "$env:GITHUB_REPOSITORY" -UpdateDirectory $output -Version "$env:RELEASE_VERSION" -Commit $commit
 
   mirror:
+    name: Mirror the installer and auto-update feed to OSS via ESA
+    if: github.ref == 'refs/heads/main'
     needs: release
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     env:
       PACKAGE_NAME: ${{ needs.release.outputs.package }}
       RELEASE_TAG: ${{ needs.release.outputs.tag }}
@@ -134,28 +134,20 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-      - name: Mirror installer and update feed to Gitee
+      - uses: aliyun/setup-aliyun-cli-action@09a5f86915bb556e27bf050e9a5e339aeb073df5 # v1
+        with:
+          version: 3.5.1
+      - uses: aliyun/configure-aliyun-credentials-action@1e5248c8d5d93a8781ac344a68e19a43341e79e6
+        with:
+          oidc-provider-arn: ${{ vars.ALIBABA_CLOUD_OIDC_PROVIDER_ARN }}
+          role-to-assume: ${{ vars.ALIBABA_CLOUD_OSS_ROLE_ARN }}
+      - name: Upload to OSS and verify through ESA
         env:
           GH_TOKEN: ${{ github.token }}
-          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
-          REPLACE_GITEE_COMMIT: ${{ inputs.replace_gitee_commit }}
         run: |
           gh release download "$env:RELEASE_TAG" --repo "$env:GITHUB_REPOSITORY" --dir $env:RUNNER_TEMP --pattern "$env:PACKAGE_NAME"
           if ($LASTEXITCODE -ne 0) { throw 'Could not download the GitHub installer.' }
           $package = Join-Path $env:RUNNER_TEMP $env:PACKAGE_NAME
           $output = Join-Path $env:RUNNER_TEMP 'stella-sora-update'
           Expand-Archive -LiteralPath $package -DestinationPath $output
-          $manifestPath = Join-Path $output 'manifest.json'
-          $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
-          $files = @($manifest.Assets | ForEach-Object { Join-Path $output $_.FilePath }) + @($manifestPath)
-          $commit = git rev-parse HEAD
-          if ($LASTEXITCODE -ne 0) { throw 'Could not resolve the release commit.' }
-          $mirror = @{
-            Repository = 'maxing_long/hi3helper-plugin-stella-sora'
-            Tag = "$env:RELEASE_TAG"
-            Commit = $commit
-          }
-          $replacement = @{}
-          if ($env:REPLACE_GITEE_COMMIT) { $replacement.ReplaceInstallerCommit = $env:REPLACE_GITEE_COMMIT }
-          ./scripts/Publish-GiteeRelease.ps1 @mirror @replacement -InstallerOnly -Files $package
-          ./scripts/Publish-GiteeRelease.ps1 @mirror -UpdateFeed -Files $files
+          ./scripts/Publish-OssMirror.ps1 -Plugin stella-sora -Tag $env:RELEASE_TAG -Installer $package -UpdateDirectory $output
