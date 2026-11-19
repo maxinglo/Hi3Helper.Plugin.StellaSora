@@ -1,0 +1,16 @@
+{
+  "source": "Official Stella Sora CN launcher",
+  "version": "1.3.0",
+  "archive": "resources/app.asar",
+  "file": "out/renderer/assets/main-2d82028d.js",
+  "symbols": {
+    "website": "MediaIconHome",
+    "wechat": "MediaIconWeChatPublicPlatform",
+    "bilibili": "MediaIconBilibili",
+    "weibo": "MediaIconWeiBo",
+    "douyin": "MediaIconDouYin",
+    "customer": "MediaIconReport"
+  },
+  "conversion": "Official SVG paths rendered as 96x96 transparent PNGs; normal uses the official gold-to-white gradient, hover uses white.",
+  "rights": "Yostar and the respective trademark holders. Not relicensed under the source-code MIT license."
+}
