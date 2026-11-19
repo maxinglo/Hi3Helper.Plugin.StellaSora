@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string] $Path, [string] $ExpectedVersion = '0.2.1.0')
+param([Parameter(Mandatory)][string] $Path, [string] $ExpectedVersion = '0.2.2.0')
 $ErrorActionPreference = 'Stop'
 if (-not ('StellaSoraNativeSmoke' -as [type])) {
     Add-Type -CompilerOptions '/unsafe' -TypeDefinition @'
@@ -38,16 +38,28 @@ public static unsafe class StellaSoraNativeSmoke
         nint plugin = 0;
         nint preset = 0;
         nint updater = 0;
+        nint QueryInterface(nint instance, string interfaceId)
+        {
+            if (instance == 0) throw new InvalidOperationException("Missing COM pointer for " + interfaceId);
+            Guid id = new Guid(interfaceId);
+            nint result = 0;
+            void** vtable = *(void***)instance;
+            Marshal.ThrowExceptionForHR(((delegate* unmanaged[MemberFunction]<nint, Guid*, nint*, int>)vtable[0])(instance, &id, &result));
+            return result;
+        }
         try
         {
-            Guid id = new Guid("436f6c6c-6170-7365-727f-000000000010");
-            void** unknownTable = *(void***)unknown;
-            Marshal.ThrowExceptionForHR(((delegate* unmanaged[MemberFunction]<nint, Guid*, nint*, int>)unknownTable[0])(unknown, &id, &plugin));
+            plugin = QueryInterface(unknown, "436f6c6c-6170-7365-727f-000000000010");
             void** table = *(void***)plugin;
             Marshal.ThrowExceptionForHR(((delegate* unmanaged[MemberFunction]<nint, nint*, int>)table[15])(plugin, &updater));
             if (updater == 0) throw new InvalidOperationException("Missing plugin updater COM pointer.");
-            void** updaterTable = *(void***)updater;
-            Marshal.ThrowExceptionForHR(((delegate* unmanaged[MemberFunction]<nint, int>)updaterTable[3])(updater));
+            nint updaterInterface = QueryInterface(updater, "436f6c6c-6170-7365-727f-000000000100");
+            try
+            {
+                void** updaterTable = *(void***)updaterInterface;
+                Marshal.ThrowExceptionForHR(((delegate* unmanaged[MemberFunction]<nint, int>)updaterTable[3])(updaterInterface));
+            }
+            finally { Marshal.Release(updaterInterface); }
 
             string[] expectedSources =
             {
@@ -97,8 +109,13 @@ public static unsafe class StellaSoraNativeSmoke
             {
                 Marshal.ThrowExceptionForHR(((delegate* unmanaged[MemberFunction]<nint, int, nint*, int>)table[11])(plugin, index, &preset));
                 if (preset == 0) throw new InvalidOperationException("Missing preset COM pointer.");
-                if (ReadString(preset, 5) != "星塔旅人") throw new InvalidOperationException("Incorrect preset game name.");
-                if (!profiles.Remove(ReadString(preset, 6))) throw new InvalidOperationException("Unexpected or duplicate profile.");
+                nint presetInterface = QueryInterface(preset, "436f6c6c-6170-7365-727f-000000000011");
+                try
+                {
+                    if (ReadString(presetInterface, 5) != "星塔旅人") throw new InvalidOperationException("Incorrect preset game name.");
+                    if (!profiles.Remove(ReadString(presetInterface, 6))) throw new InvalidOperationException("Unexpected or duplicate profile.");
+                }
+                finally { Marshal.Release(presetInterface); }
                 Marshal.Release(preset);
                 preset = 0;
             }

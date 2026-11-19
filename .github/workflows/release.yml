@@ -36,9 +36,9 @@ jobs:
             throw "Release tag '$env:GITHUB_REF_NAME' must match project version v$version."
           }
       - name: Build and run regression tests
-        run: ./scripts/Build.ps1 -Test
+        run: ./scripts/Build.ps1 -Configuration ReleaseNoReflection -Test
       - name: Publish and verify NativeAOT assets
-        run: ./scripts/Publish.ps1 -Package
+        run: ./scripts/Publish.ps1 -Package -NoReflectionO2
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}

@@ -47,7 +47,7 @@
 
 ```powershell
 ./scripts/Build.ps1 -Test
-./scripts/Publish.ps1 -Package
+./scripts/Publish.ps1 -Package -NoReflectionO2
 ```
 
 打包后的插件位于 `artifacts/packages/`。解压后可运行 `Invoke-StellaSoraMaintenance.ps1` 检查游戏文件，添加 `-Repair` 可修复。

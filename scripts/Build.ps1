@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([ValidateSet('Debug', 'Release')][string] $Configuration = 'Release', [switch] $Test)
+param([ValidateSet('Debug', 'Release', 'ReleaseNoReflection')][string] $Configuration = 'Release', [switch] $Test)
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 Push-Location $root
