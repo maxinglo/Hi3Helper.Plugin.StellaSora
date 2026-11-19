@@ -9,7 +9,7 @@ internal static class SocialIconCatalog
         ["website"] = Load("website"), ["wechat"] = Load("wechat"), ["bilibili"] = Load("bilibili"),
         ["weibo"] = Load("weibo"), ["douyin"] = Load("douyin"), ["customer"] = Load("customer"),
         ["x"] = Load("x"), ["youtube"] = Load("youtube"), ["facebook"] = Load("facebook"),
-        ["discord"] = Load("discord"), ["lounge"] = Load("lounge")
+        ["discord"] = Load("discord"), ["lounge"] = Load("lounge"), ["cafe"] = Load("cafe")
     };
 
     internal static IconPair Get(string channel) => Icons[channel.Trim().ToLowerInvariant() switch
@@ -23,7 +23,8 @@ internal static class SocialIconCatalog
         "youtube" => "youtube",
         "fb" or "facebook" => "facebook",
         "discord" => "discord",
-        "lounge" or "naver" or "cafe" => "lounge",
+        "lounge" or "naver" => "lounge",
+        "cafe" => "cafe",
         _ => "website"
     }];
 

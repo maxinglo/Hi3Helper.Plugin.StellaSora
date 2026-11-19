@@ -385,7 +385,17 @@ internal static class Program
             Equal(news.Socials.Length, 6);
             Equal(news.News[0].Type, LauncherNewsEntryType.Notice);
             ValidateNewsMemory(news);
-            ValidateSocialMemory(news);
+            ValidateSocialMemory(news, ["官网", "微信公众号", "bilibili", "微博", "抖音", "联系客服"]);
+        });
+        await RunAsync("Traditional Chinese social entries use distinct white launcher icons", async () =>
+        {
+            StellaSoraRegion region = StellaSoraRegion.Tw;
+            using Fixture fixture = new(NewRoot("tw-social", region), region: region);
+            string[] channels = ["Facebook", "YouTube", "官网", "Discord"];
+            fixture.Handler.SocialChannels = channels;
+            using StellaSoraLauncherNews news = new(region, new HttpClient(fixture.Handler, false));
+            await news.InitializeAsync(default);
+            ValidateSocialMemory(news, channels, whiteIcons: true);
         });
         await Run("Launcher notice lists classify and deduplicate localized entries", () =>
         {
@@ -423,10 +433,10 @@ internal static class Program
         return ~crc;
     }
 
-    private static unsafe void ValidateSocialMemory(StellaSoraLauncherNews news)
+    private static unsafe void ValidateSocialMemory(StellaSoraLauncherNews news, string[] channels, bool whiteIcons = false)
     {
         news.GetSocialMediaEntries(out nint pointer, out int count, out bool disposable, out bool allocated);
-        Check(disposable && allocated && count == 6, "Invalid social ABI allocation");
+        Check(disposable && allocated && count == channels.Length, "Invalid social ABI allocation");
         var memory = new PluginDisposableMemory<LauncherSocialMediaEntry>((LauncherSocialMediaEntry*)pointer, count);
         HashSet<string> images = [];
         try
@@ -435,14 +445,21 @@ internal static class Program
             {
                 Check(memory[i].Flags.HasFlag(LauncherSocialMediaEntryFlag.IconIsDataBuffer),
                     "Social icon has incorrect flags");
+                Check(memory[i].Flags.HasFlag(LauncherSocialMediaEntryFlag.IconHoverIsDataBuffer),
+                    "Social hover icon has incorrect flags");
                 byte[] bytes = System.Buffers.Text.Base64Url.DecodeFromChars(memory[i].IconPath);
                 Check(bytes.AsSpan(0, 8).SequenceEqual(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }),
                     "Social icon is not a PNG");
                 images.Add(Convert.ToHexString(SHA256.HashData(bytes)));
+                byte[] hover = System.Buffers.Text.Base64Url.DecodeFromChars(memory[i].IconHoverPath);
+                Equal(bytes.SequenceEqual(hover), whiteIcons);
+                Equal(news.Socials[i].Name, channels[i]);
+                Equal(memory[i].ClickUrl, news.Socials[i].Url);
+                if (channels[i] == "微信公众号")
+                    Check(memory[i].Flags.HasFlag(LauncherSocialMediaEntryFlag.QrImageIsPath), "WeChat QR resource was lost");
             }
 
-            Equal(images.Count, 6);
-            Check(memory[1].Flags.HasFlag(LauncherSocialMediaEntryFlag.QrImageIsPath), "WeChat QR resource was lost");
+            Equal(images.Count, channels.Length);
         }
         finally
         {
@@ -674,6 +691,7 @@ internal static class Program
         internal bool CorruptPrimary;
         internal bool RejectRange;
         internal bool WrongRange;
+        internal string[]? SocialChannels;
         internal Action<CancellationToken>? OnDownload;
         internal GameManifest? LiveManifest;
         internal GameRelease? LiveRelease;
@@ -706,7 +724,10 @@ internal static class Program
                     "/api/launcher/social/media/resource" => new
                     {
                         social_media_resource_open = true,
-                        social_media_resource_list = new[]
+                        social_media_resource_list = SocialChannels?.Select(channel => new
+                        {
+                            social_media_channel = channel, qr_img = "", jump_url = "https://example.test/" + Uri.EscapeDataString(channel)
+                        }).ToArray() ?? new[]
                         {
                             new { social_media_channel = "官网", qr_img = "", jump_url = "https://example.test" },
                             new

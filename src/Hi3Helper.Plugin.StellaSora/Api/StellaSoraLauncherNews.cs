@@ -14,6 +14,7 @@ namespace Hi3Helper.Plugin.StellaSora.Api;
 internal sealed partial class StellaSoraLauncherNews : LauncherApiNewsBase, IDisposable
 {
     private readonly LauncherClient _client;
+    private readonly bool _usesWhiteSocialIcons;
     internal NewsItem[] News { get; private set; } = [];
     internal BannerItem[] Banners { get; private set; } = [];
     internal SocialItem[] Socials { get; private set; } = [];
@@ -33,6 +34,7 @@ internal sealed partial class StellaSoraLauncherNews : LauncherApiNewsBase, IDis
     {
         ApiResponseHttpClient = http ?? LauncherClient.CreateHttpClient();
         _client = new(ApiResponseHttpClient, region);
+        _usesWhiteSocialIcons = region.UsesWhiteSocialIcons;
     }
 
     protected override HttpClient ApiResponseHttpClient { get; set; }
@@ -193,7 +195,7 @@ internal sealed partial class StellaSoraLauncherNews : LauncherApiNewsBase, IDis
         {
             SocialIconCatalog.IconPair icon = SocialIconCatalog.Get(items[i].Name);
             memory[i].WriteDescription(items[i].Name);
-            memory[i].WriteIcon(icon.Normal);
+            memory[i].WriteIcon(_usesWhiteSocialIcons ? icon.Hover : icon.Normal);
             memory[i].WriteIconHover(icon.Hover);
             memory[i].WriteClickUrl(items[i].Url);
             LauncherSocialMediaEntryFlag flags = LauncherSocialMediaEntryFlag.IconIsDataBuffer |

@@ -21,6 +21,7 @@ internal sealed record StellaSoraRegion(
     internal string InstallParentDirectory { get; init; } = "YostarGames";
     internal string LauncherProcessName => GameTag + "_Gamelauncher";
     internal bool HasExtendedInstallConfig { get; init; }
+    internal bool UsesWhiteSocialIcons { get; init; }
 
     internal static StellaSoraRegion Cn { get; } = new(
         "CN", "StellaSora_CN", "https://launcher-api.yostar.net/", "1.3.0",
@@ -58,7 +59,8 @@ internal sealed record StellaSoraRegion(
         "Stargazer HongKong Limited", "StellaSora", "台港澳繁中服", "Taiwan, Hong Kong and Macau", "zh-TW", ["zh-TW"])
     {
         InstallParentDirectory = "StargazerGames",
-        HasExtendedInstallConfig = true
+        HasExtendedInstallConfig = true,
+        UsesWhiteSocialIcons = true
     };
 
     internal static IReadOnlyList<StellaSoraRegion> Supported { get; } = [Cn, En, Jp, Kr, Tw];

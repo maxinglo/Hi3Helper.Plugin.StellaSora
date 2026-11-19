@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string] $Path, [string] $ExpectedVersion = '0.2.0.0')
+param([Parameter(Mandatory)][string] $Path, [string] $ExpectedVersion = '0.2.1.0')
 $ErrorActionPreference = 'Stop'
 if (-not ('StellaSoraNativeSmoke' -as [type])) {
     Add-Type -CompilerOptions '/unsafe' -TypeDefinition @'

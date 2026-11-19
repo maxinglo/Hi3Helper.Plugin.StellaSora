@@ -11,6 +11,19 @@
     "douyin": "MediaIconDouYin",
     "customer": "MediaIconReport"
   },
-  "conversion": "Official SVG paths rendered as 96x96 transparent PNGs; normal uses the official gold-to-white gradient, hover uses white.",
+  "additionalSource": {
+    "source": "Official Stella Sora KR launcher",
+    "version": "1.6.0",
+    "file": "out/renderer/assets/main-c7d5a2c3.js",
+    "symbols": {
+      "facebook": "MediaIconFacebook",
+      "youtube": "MediaIconYoutube",
+      "discord": "MediaIconDiscord",
+      "x": "MediaIconX",
+      "lounge": "MediaIconLounge",
+      "cafe": "MediaIconCoffee"
+    }
+  },
+  "conversion": "Official SVG paths rendered as 96x96 transparent PNGs. The CN, EN, JP and KR themes use the gold-to-white variant. The TW 1.8.2 launcher uses the same paths in white.",
   "rights": "Yostar and the respective trademark holders. Not relicensed under the source-code MIT license."
 }

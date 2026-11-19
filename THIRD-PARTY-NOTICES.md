@@ -25,7 +25,7 @@ The embedded game icon comes from the installed official Stella Sora CN launcher
 artwork, and trademarks belong to their respective owners; the source-code MIT license does not relicense those assets.
 The plugin is a community project and is not affiliated with Yostar.
 
-The six social icons are the official launcher's corresponding SVG symbols rendered as transparent PNGs. Their provenance is recorded in `Assets/Social/UPSTREAM.json`; the source-code MIT license does not relicense these assets.
+Social icons use SVG symbols from the official Windows launchers, rendered as transparent PNGs. See `Assets/Social/UPSTREAM.json` for their sources. The game and platform artwork belongs to the respective rights holders.
 
 ## Protocol research
 
