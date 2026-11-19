@@ -1,5 +1,6 @@
 <Solution>
   <Configurations>
+    <BuildType Name="ReleaseNoReflection" />
     <Platform Name="x64" />
   </Configurations>
   <Folder Name="/src/">

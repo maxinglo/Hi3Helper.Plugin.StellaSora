@@ -27,7 +27,7 @@ public partial class StellaSoraPlugin : PluginBase
     public override void GetPluginAuthor(out string result) => result = "Maxing";
     public override void GetPluginAppIconUrl(out string result) => result = StellaSoraConstants.Icon;
     public override void GetNotificationPosterUrl(out string result) => result = StellaSoraRegion.Cn.Background;
-    public override void GetPluginSelfUpdater(out IPluginSelfUpdate? result) => result = null;
+    public override void GetPluginSelfUpdater(out IPluginSelfUpdate? result) => result = new StellaSoraPluginSelfUpdater();
     public override unsafe void GetPluginCreationDate(out DateTime* result) => result = _creationDate.AsPointer();
     public override void GetPresetConfigCount(out int count) => count = _presets.Length;
 

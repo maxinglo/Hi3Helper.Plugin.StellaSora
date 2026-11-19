@@ -1,10 +1,15 @@
 [CmdletBinding()]
-param([switch] $Package)
+param([switch] $Package, [switch] $NoReflectionO2)
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $project = Join-Path $root 'src/Hi3Helper.Plugin.StellaSora/Hi3Helper.Plugin.StellaSora.csproj'
 $output = Join-Path $root 'artifacts/publish/win-x64'
-& dotnet publish $project -c Release -r win-x64 -p:Platform=x64 -p:IlcOptimizationPreference=Size -o $output --nologo
+$publishOptions = if ($NoReflectionO2) {
+    @('-c', 'ReleaseNoReflection', '-p:IlcDisableReflection=true', '-p:IlcScanReflection=false', '-p:IlcOptimizationPreference=Speed')
+} else {
+    @('-c', 'Release', '-p:IlcOptimizationPreference=Size')
+}
+& dotnet publish $project @publishOptions -r win-x64 -p:Platform=x64 -o $output --nologo
 if ($LASTEXITCODE -ne 0) { throw 'NativeAOT publish failed.' }
 Copy-Item -LiteralPath (Join-Path $root 'LICENSE') -Destination (Join-Path $output 'LICENSE.txt') -Force
 Copy-Item -LiteralPath (Join-Path $root 'THIRD-PARTY-NOTICES.md') -Destination $output -Force

@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string] $Path, [string] $ExpectedVersion = '0.2.1.0')
+param([Parameter(Mandatory)][string] $Path, [string] $ExpectedVersion = '0.2.2.0')
 $ErrorActionPreference = 'Stop'
 if (-not ('StellaSoraNativeSmoke' -as [type])) {
     Add-Type -CompilerOptions '/unsafe' -TypeDefinition @'
@@ -37,12 +37,55 @@ public static unsafe class StellaSoraNativeSmoke
         nint unknown = (nint)((delegate* unmanaged[Cdecl]<void*>)Find("GetPlugin"))();
         nint plugin = 0;
         nint preset = 0;
+        nint updater = 0;
+        nint QueryInterface(nint instance, string interfaceId)
+        {
+            if (instance == 0) throw new InvalidOperationException("Missing COM pointer for " + interfaceId);
+            Guid id = new Guid(interfaceId);
+            nint result = 0;
+            void** vtable = *(void***)instance;
+            Marshal.ThrowExceptionForHR(((delegate* unmanaged[MemberFunction]<nint, Guid*, nint*, int>)vtable[0])(instance, &id, &result));
+            return result;
+        }
         try
         {
-            Guid id = new Guid("436f6c6c-6170-7365-727f-000000000010");
-            void** unknownTable = *(void***)unknown;
-            Marshal.ThrowExceptionForHR(((delegate* unmanaged[MemberFunction]<nint, Guid*, nint*, int>)unknownTable[0])(unknown, &id, &plugin));
+            plugin = QueryInterface(unknown, "436f6c6c-6170-7365-727f-000000000010");
             void** table = *(void***)plugin;
+            Marshal.ThrowExceptionForHR(((delegate* unmanaged[MemberFunction]<nint, nint*, int>)table[15])(plugin, &updater));
+            if (updater == 0) throw new InvalidOperationException("Missing plugin updater COM pointer.");
+            nint updaterInterface = QueryInterface(updater, "436f6c6c-6170-7365-727f-000000000100");
+            try
+            {
+                void** updaterTable = *(void***)updaterInterface;
+                Marshal.ThrowExceptionForHR(((delegate* unmanaged[MemberFunction]<nint, int>)updaterTable[3])(updaterInterface));
+            }
+            finally { Marshal.Release(updaterInterface); }
+
+            string[] expectedSources =
+            {
+                "https://github.com/maxinglo/Hi3Helper.Plugin.StellaSora/releases/latest/download/",
+                "https://gitee.com/maxing_long/hi3helper-plugin-stella-sora/releases/download/latest/"
+            };
+            int sourceCount = 0;
+            char** sourceUrls = null;
+            ((delegate* unmanaged[Cdecl]<int*, char***, void>)Find("GetPluginUpdateCdnList"))(&sourceCount, &sourceUrls);
+            try
+            {
+                if (sourceUrls == null || sourceCount != expectedSources.Length)
+                    throw new InvalidOperationException("Unexpected number of plugin update sources.");
+                for (int index = 0; index < sourceCount; index++)
+                    if (Marshal.PtrToStringUni((nint)sourceUrls[index]) != expectedSources[index])
+                        throw new InvalidOperationException("Unexpected plugin update URL.");
+            }
+            finally
+            {
+                if (sourceUrls != null)
+                {
+                    for (int index = 0; index < sourceCount; index++) Marshal.FreeCoTaskMem((nint)sourceUrls[index]);
+                    NativeMemory.Free(sourceUrls);
+                }
+            }
+
             int count = 0;
             Marshal.ThrowExceptionForHR(((delegate* unmanaged[MemberFunction]<nint, int*, int>)table[8])(plugin, &count));
             var profiles = new HashSet<string> { "StellaSoraCN", "StellaSoraEN", "StellaSoraJP", "StellaSoraKR", "StellaSoraTW" };
@@ -66,19 +109,25 @@ public static unsafe class StellaSoraNativeSmoke
             {
                 Marshal.ThrowExceptionForHR(((delegate* unmanaged[MemberFunction]<nint, int, nint*, int>)table[11])(plugin, index, &preset));
                 if (preset == 0) throw new InvalidOperationException("Missing preset COM pointer.");
-                if (ReadString(preset, 5) != "星塔旅人") throw new InvalidOperationException("Incorrect preset game name.");
-                if (!profiles.Remove(ReadString(preset, 6))) throw new InvalidOperationException("Unexpected or duplicate profile.");
+                nint presetInterface = QueryInterface(preset, "436f6c6c-6170-7365-727f-000000000011");
+                try
+                {
+                    if (ReadString(presetInterface, 5) != "星塔旅人") throw new InvalidOperationException("Incorrect preset game name.");
+                    if (!profiles.Remove(ReadString(presetInterface, 6))) throw new InvalidOperationException("Unexpected or duplicate profile.");
+                }
+                finally { Marshal.Release(presetInterface); }
                 Marshal.Release(preset);
                 preset = 0;
             }
         }
         finally
         {
+            if (updater != 0) Marshal.Release(updater);
             if (preset != 0) Marshal.Release(preset);
             if (plugin != 0) Marshal.Release(plugin);
             if (unknown != 0) Marshal.Release(unknown);
         }
-        return "PASS: NativeAOT exports, five COM presets, localized metadata and icon. Core " + standard + ", StellaSora " + version;
+        return "PASS: NativeAOT exports, five COM presets, localized metadata, icon, and both update sources. Core " + standard + ", StellaSora " + version;
     }
 }
 '@
