@@ -37,12 +37,43 @@ public static unsafe class StellaSoraNativeSmoke
         nint unknown = (nint)((delegate* unmanaged[Cdecl]<void*>)Find("GetPlugin"))();
         nint plugin = 0;
         nint preset = 0;
+        nint updater = 0;
         try
         {
             Guid id = new Guid("436f6c6c-6170-7365-727f-000000000010");
             void** unknownTable = *(void***)unknown;
             Marshal.ThrowExceptionForHR(((delegate* unmanaged[MemberFunction]<nint, Guid*, nint*, int>)unknownTable[0])(unknown, &id, &plugin));
             void** table = *(void***)plugin;
+            Marshal.ThrowExceptionForHR(((delegate* unmanaged[MemberFunction]<nint, nint*, int>)table[15])(plugin, &updater));
+            if (updater == 0) throw new InvalidOperationException("Missing plugin updater COM pointer.");
+            void** updaterTable = *(void***)updater;
+            Marshal.ThrowExceptionForHR(((delegate* unmanaged[MemberFunction]<nint, int>)updaterTable[3])(updater));
+
+            string[] expectedSources =
+            {
+                "https://github.com/maxinglo/Hi3Helper.Plugin.StellaSora/releases/latest/download/",
+                "https://gitee.com/maxing_long/hi3helper-plugin-stella-sora/releases/download/latest/"
+            };
+            int sourceCount = 0;
+            char** sourceUrls = null;
+            ((delegate* unmanaged[Cdecl]<int*, char***, void>)Find("GetPluginUpdateCdnList"))(&sourceCount, &sourceUrls);
+            try
+            {
+                if (sourceUrls == null || sourceCount != expectedSources.Length)
+                    throw new InvalidOperationException("Unexpected number of plugin update sources.");
+                for (int index = 0; index < sourceCount; index++)
+                    if (Marshal.PtrToStringUni((nint)sourceUrls[index]) != expectedSources[index])
+                        throw new InvalidOperationException("Unexpected plugin update URL.");
+            }
+            finally
+            {
+                if (sourceUrls != null)
+                {
+                    for (int index = 0; index < sourceCount; index++) Marshal.FreeCoTaskMem((nint)sourceUrls[index]);
+                    NativeMemory.Free(sourceUrls);
+                }
+            }
+
             int count = 0;
             Marshal.ThrowExceptionForHR(((delegate* unmanaged[MemberFunction]<nint, int*, int>)table[8])(plugin, &count));
             var profiles = new HashSet<string> { "StellaSoraCN", "StellaSoraEN", "StellaSoraJP", "StellaSoraKR", "StellaSoraTW" };
@@ -74,11 +105,12 @@ public static unsafe class StellaSoraNativeSmoke
         }
         finally
         {
+            if (updater != 0) Marshal.Release(updater);
             if (preset != 0) Marshal.Release(preset);
             if (plugin != 0) Marshal.Release(plugin);
             if (unknown != 0) Marshal.Release(unknown);
         }
-        return "PASS: NativeAOT exports, five COM presets, localized metadata and icon. Core " + standard + ", StellaSora " + version;
+        return "PASS: NativeAOT exports, five COM presets, localized metadata, icon, and both update sources. Core " + standard + ", StellaSora " + version;
     }
 }
 '@

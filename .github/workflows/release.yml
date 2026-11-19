@@ -1,0 +1,82 @@
+name: Release Stella Sora Plugin
+
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+  workflow_dispatch:
+
+concurrency:
+  group: stella-sora-plugin-release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    if: github.ref_type == 'tag'
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      - name: Check release tag
+        run: |
+          [xml] $project = Get-Content src/Hi3Helper.Plugin.StellaSora/Hi3Helper.Plugin.StellaSora.csproj -Raw
+          $version = [string]$project.Project.PropertyGroup.Version
+          if ($version -cnotmatch '^\d+\.\d+\.\d+$' -or $env:GITHUB_REF_NAME -cne "v$version") {
+            throw "Release tag '$env:GITHUB_REF_NAME' must match project version v$version."
+          }
+      - name: Build and run regression tests
+        run: ./scripts/Build.ps1 -Test
+      - name: Publish and verify NativeAOT assets
+        run: ./scripts/Publish.ps1 -Package
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $output = 'artifacts/publish/win-x64'
+          $manifestPath = Join-Path $output 'manifest.json'
+          $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+          $files = @($manifest.Assets | ForEach-Object { Join-Path $output $_.FilePath })
+          $files += $manifestPath
+          $files += "artifacts/packages/StellaSora_$($manifest.PluginVersion)_win-x64.zip"
+          # The CLI stages all attachments on a draft before publishing it.
+          gh release create "$env:GITHUB_REF_NAME" @files --repo "$env:GITHUB_REPOSITORY" --verify-tag --title "Stella Sora $env:GITHUB_REF_NAME" --generate-notes
+          if ($LASTEXITCODE -ne 0) { throw 'GitHub Release publication failed.' }
+
+  mirror:
+    needs: release
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Mirror the GitHub Release to Gitee
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          if (-not $env:GITEE_TOKEN) { throw 'Set the GITEE_TOKEN Actions secret to publish the Gitee mirror.' }
+          $output = Join-Path $env:RUNNER_TEMP 'stella-sora-release'
+          gh release download "$env:GITHUB_REF_NAME" --repo "$env:GITHUB_REPOSITORY" --dir $output --pattern '*'
+          if ($LASTEXITCODE -ne 0) { throw 'Could not download the GitHub Release assets.' }
+          $manifest = Get-Content -LiteralPath (Join-Path $output 'manifest.json') -Raw | ConvertFrom-Json
+          $files = @($manifest.Assets | ForEach-Object { Join-Path $output $_.FilePath })
+          $files += Join-Path $output 'manifest.json'
+          $files += Join-Path $output "StellaSora_$($manifest.PluginVersion)_win-x64.zip"
+          $commit = git rev-parse HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Could not resolve the release commit.' }
+          ./scripts/Publish-GiteeRelease.ps1 -Repository 'maxing_long/hi3helper-plugin-stella-sora' -Tag "$env:GITHUB_REF_NAME" -Commit $commit -Files $files
