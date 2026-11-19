@@ -13,7 +13,7 @@ $publishOptions = if ($NoReflectionO2) {
 if ($LASTEXITCODE -ne 0) { throw 'NativeAOT publish failed.' }
 Copy-Item -LiteralPath (Join-Path $root 'LICENSE') -Destination (Join-Path $output 'LICENSE.txt') -Force
 Copy-Item -LiteralPath (Join-Path $root 'THIRD-PARTY-NOTICES.md') -Destination $output -Force
-Copy-Item -LiteralPath (Join-Path $root 'vendor/Hi3Helper.Plugin.Core/LICENSE') -Destination (Join-Path $output 'Hi3Helper.Plugin.Core.LICENSE.txt') -Force
+Copy-Item -LiteralPath (Join-Path $root 'Hi3Helper.Plugin.Core/LICENSE') -Destination (Join-Path $output 'Hi3Helper.Plugin.Core.LICENSE.txt') -Force
 Copy-Item -LiteralPath (Join-Path $root 'vendor/licenses/Microsoft.NET.LICENSE.txt') -Destination $output -Force
 Copy-Item -LiteralPath (Join-Path $root 'vendor/licenses/Microsoft.NET.THIRD-PARTY-NOTICES.txt') -Destination $output -Force
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Invoke-StellaSoraMaintenance.ps1') -Destination $output -Force
@@ -27,7 +27,7 @@ $assets = foreach ($name in $names) {
 }
 $manifest = [ordered]@{
     PluginVersion = $versionText
-    PluginStandardVersion = '0.1.6.0'
+    PluginStandardVersion = '0.1.6.2'
     PluginCreationDate = '2026-11-10T00:00:00Z'
     ManifestDate = [DateTimeOffset]::UtcNow.ToString('o')
     MainLibraryName = 'StellaSora.dll'

@@ -5,5 +5,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Hi3Helper.Plugin.Core'">
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <NuGetLockFilePath>$(MSBuildThisFileDirectory)eng/locks/Hi3Helper.Plugin.Core.packages.lock.json</NuGetLockFilePath>
   </PropertyGroup>
 </Project>

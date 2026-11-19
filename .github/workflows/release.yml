@@ -28,6 +28,7 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
+          submodules: recursive
       - name: Check project version and existing release
         id: version
         env:

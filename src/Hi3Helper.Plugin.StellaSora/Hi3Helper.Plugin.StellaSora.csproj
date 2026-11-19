@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFramework>net11.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Platforms>x64</Platforms>
@@ -21,7 +21,7 @@
     <NoWarn>$(NoWarn);CA2256</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../vendor/Hi3Helper.Plugin.Core/Hi3Helper.Plugin.Core.csproj" />
+    <ProjectReference Include="../../Hi3Helper.Plugin.Core/Hi3Helper.Plugin.Core.csproj" />
     <InternalsVisibleTo Include="Hi3Helper.Plugin.StellaSora.Tests" />
     <EmbeddedResource Include="Assets/icon.ico" />
     <EmbeddedResource Include="Assets/Social/*.png" />

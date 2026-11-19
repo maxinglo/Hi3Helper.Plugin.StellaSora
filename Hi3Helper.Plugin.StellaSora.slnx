@@ -8,11 +8,9 @@
       <Platform Project="x64" />
     </Project>
   </Folder>
-  <Folder Name="/vendor/">
-    <Project Path="vendor/Hi3Helper.Plugin.Core/Hi3Helper.Plugin.Core.csproj">
-      <Platform Project="x64" />
-    </Project>
-  </Folder>
+  <Project Path="Hi3Helper.Plugin.Core/Hi3Helper.Plugin.Core.csproj">
+    <Platform Project="x64" />
+  </Project>
   <Folder Name="/tests/">
     <Project Path="tests/Hi3Helper.Plugin.StellaSora.Tests/Hi3Helper.Plugin.StellaSora.Tests.csproj">
       <Platform Project="x64" />

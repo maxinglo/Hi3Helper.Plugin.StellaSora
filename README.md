@@ -11,7 +11,7 @@
 </div>
 
 > [!IMPORTANT]
-> 使用 Windows x64 和支持插件接口 0.1.6 的 Collapse Launcher。插件问题请在本仓库反馈。
+> 使用 Windows x64 和支持插件接口 0.1.6.2 的 Collapse Launcher。插件问题请在本仓库反馈。
 
 ## 功能
 
@@ -43,9 +43,10 @@
 
 ## 从源码构建
 
-需要 .NET 10 SDK、PowerShell 7、Visual Studio C++ 工具链和 Windows SDK。
+需要 .NET 11 SDK、PowerShell 7、Visual Studio C++ 工具链和 Windows SDK。
 
 ```powershell
+git submodule update --init --recursive
 ./scripts/Build.ps1 -Test
 ./scripts/Publish.ps1 -Package -NoReflectionO2
 ```

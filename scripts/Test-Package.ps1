@@ -7,7 +7,7 @@ try {
     if ($null -eq $manifestEntry) { throw 'Package manifest is missing.' }
     $reader = [IO.StreamReader]::new($manifestEntry.Open())
     try { $manifest = $reader.ReadToEnd() | ConvertFrom-Json } finally { $reader.Dispose() }
-    if ($manifest.MainLibraryName -ne 'StellaSora.dll' -or $manifest.PluginStandardVersion -ne '0.1.6.0') { throw 'Unexpected plugin metadata.' }
+    if ($manifest.MainLibraryName -ne 'StellaSora.dll' -or $manifest.PluginStandardVersion -ne '0.1.6.2') { throw 'Unexpected plugin metadata.' }
     $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
     foreach ($asset in $manifest.Assets) {
         $name = [string]$asset.FilePath

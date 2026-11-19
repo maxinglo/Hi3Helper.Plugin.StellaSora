@@ -31,7 +31,7 @@ public static unsafe class StellaSoraNativeSmoke
         }
         Version standard = ReadVersion("GetPluginStandardVersion");
         Version version = ReadVersion("GetPluginVersion");
-        if (standard != new Version(0, 1, 6, 0) || version != Version.Parse(expectedVersion))
+        if (standard != new Version(0, 1, 6, 2) || version != Version.Parse(expectedVersion))
             throw new InvalidOperationException("Unexpected API or plugin version.");
         foreach (string name in new[] { "LaunchGameFromGameManagerAsync", "IsGameRunning", "WaitRunningGameAsync", "KillRunningGame", "CheckStellaSoraGameIntegrity", "RepairStellaSoraGame" }) Find(name);
         nint unknown = (nint)((delegate* unmanaged[Cdecl]<void*>)Find("GetPlugin"))();

@@ -3,18 +3,17 @@
 ## Hi3Helper.Plugin.Core
 
 - Source: https://github.com/CollapseLauncher/Hi3Helper.Plugin.Core
-- Revision: `8c5a18525331d550777d2831943a4858a7fc940c`
-- API standard: `0.1.6`
+- Revision: `6d782372ead67217d04f2e3ed835269dcfd7e9c8`
+- API standard: `0.1.6.2`
 - License: MIT, Copyright (c) 2025 Collapse Launcher.
-- The source snapshot in `vendor/Hi3Helper.Plugin.Core` was copied from the reference NTE project's pinned submodule.
-  Build output, Git metadata, docs, and its sample test application are excluded. Runtime source files are unchanged.
-- License text: `vendor/Hi3Helper.Plugin.Core/LICENSE`, included as `Hi3Helper.Plugin.Core.LICENSE.txt` in plugin
+- The upstream source is pinned as a Git submodule at `Hi3Helper.Plugin.Core`.
+- License text: `Hi3Helper.Plugin.Core/LICENSE`, included as `Hi3Helper.Plugin.Core.LICENSE.txt` in plugin
   packages.
 
-## Microsoft.Extensions.Logging.Abstractions
+## .NET Runtime
 
 - Source: https://github.com/dotnet/runtime
-- Version: `10.0.13`
+- Version: `11.0.0`
 - License: MIT, .NET Foundation and Contributors. The .NET license and runtime third-party notices are included in
   `vendor/licenses/` and in plugin packages, covering the linked runtime as well.
 
